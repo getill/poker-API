@@ -1,0 +1,37 @@
+services:
+  nest-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nest-app
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+
+  mongodb:
+    image: mongo:latest
+    container_name: poker-api-mongodb
+    hostname: mongodb
+    volumes:
+      - ./mongodb/initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./mongodb/data:/data/db/
+      - ./mongodb/log:/var/log/mongodb/
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
+    networks:
+      - mongodb_network
+
+networks:
+  mongodb_network:
+    name: poker-api-network
+    driver: bridge
